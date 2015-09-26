@@ -10,7 +10,6 @@ Contents:
 
 * fuckingweather.py - display weather in the style of [thefuckingweather.com](http://thefuckingweather.com)
 * heh.py - channelmodule (BlizzCon/QuakeCon counters, reddit API queries, random youporn comments and more nonsense)
-* history.py - adds .history command to display history channels "today in history"
 * streams.py - twitch.tv and hitbox.tv integration (API query, channel announcement when stream goes online)
 * twit.py - adds .twit and .tweet command to be capable to read/write tweets (requires API key)
 * ud.py - adds .urban command to query [urbandictionary.com](http://urbandictionary.com)
