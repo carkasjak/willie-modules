@@ -23,6 +23,7 @@ streamers = [
   "runterfallnoob",
   "flyfunnyb",
   "strenx_",
+  "gamesdonequick",
   "freddurst"
 ]
 
