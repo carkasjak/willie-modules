@@ -23,8 +23,7 @@ streamers = [
   "runterfallnoob",
   "flyfunnyb",
   "strenx_",
-  "freddurst",
-  "GamesDoneQuick"
+  "freddurst"
 ]
 
 hstreamers = [
