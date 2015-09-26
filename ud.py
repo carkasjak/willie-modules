@@ -26,7 +26,7 @@ def get_def(word, num=0):
             thumbsdown = resp['list'][num]['thumbs_down']
             points = str(int(thumbsup) - int(thumbsdown))
             total_nom = len(resp['list'])
-            definition = 'Definition: ' + str(item)[1:] + " | Number: " + str(nom) + '/' + str(total_nom) + ' | Points: ' + points + ' (03' + str(thumbsup) + '|05' + str(thumbsdown) + ')'
+            definition = 'Definition: ' + str(item)[1:].replace("\n", "") + " | Number: " + str(nom) + '/' + str(total_nom) + ' | Points: ' + points + ' (03' + str(thumbsup) + '|05' + str(thumbsdown) + ')'
         except IndexError:
             definition = ('Definition entry %s does'
                           'not exist for \'%s\'.' % (nom, word))
@@ -49,4 +49,5 @@ def urban(bot, trigger):
         except ValueError:
             pass
     definition = get_def(word, defnum).replace('\r', ' / ')
-    bot.say(definition, max_messages=5)
+    definition = definition.replace("\n", "")
+	bot.say(definition, max_messages=5)
