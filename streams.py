@@ -30,7 +30,8 @@ streamers = [
 hstreamers = [
   "ridelore",
   "beatheads",
-  "Thaya"
+  "Thaya",
+  "mikletv"
 ]
 
 currently_streaming = {}
