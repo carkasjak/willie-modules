@@ -50,4 +50,4 @@ def urban(bot, trigger):
             pass
     definition = get_def(word, defnum).replace('\r', ' / ')
     definition = definition.replace("\n", "")
-	bot.say(definition, max_messages=5)
+    bot.say(definition, max_messages=5)

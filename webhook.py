@@ -2,7 +2,7 @@
 webhook.py - allows github webhooks
 '''
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from multiprocessing import Process, Queue
 import willie.module
 import json
@@ -81,7 +81,7 @@ def serve_forever(server):
 
 def configure(config):
     config.interactive_add(
-        "webbook",
+        "webhook",
         "listen_address",
         "The address to listen on",
         default="0.0.0.0:8973")
