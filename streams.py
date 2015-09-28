@@ -24,6 +24,7 @@ streamers = [
   "flyfunnyb",
   "strenx_",
   "gamesdonequick",
+  "mikletv",
   "freddurst"
 ]
 
