@@ -26,6 +26,7 @@ streamers = [
   "gamesdonequick",
   "mikletv",
   "pangaeapanga",
+  "beatfightercompetition",
   "freddurst"
 ]
 
