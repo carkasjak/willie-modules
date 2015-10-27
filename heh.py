@@ -47,10 +47,6 @@ def nfact(bot, trigger):
 def fourtytwo(bot, trigger):
    bot.say(requests.get("http://numbersapi.com/42").text)
 
-@willie.module.commands('卐')
-def hitler(bot, trigger):
-   bot.say("http://i.imgur.com/Caehw8O.gif")
-
 @willie.module.commands('tfact')
 def today(bot, trigger):
    month = datetime.datetime.now().month
@@ -71,12 +67,6 @@ def shower(bot, trigger):
 def fifty(bot, trigger):
   header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
   pick = choice(requests.get("http://www.reddit.com/r/fiftyfifty.json?limit=100", headers=header).json()["data"]["children"])["data"]
-  bot.say("%s - %s" % (pick["title"], pick["url"]))
-
-@willie.module.commands('thaya')
-def mildy(bot, trigger):
-  header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
-  pick = choice(requests.get("https://www.reddit.com/r/MildyAmusing.json?limit=100", headers=header).json()["data"]["children"])["data"]
   bot.say("%s - %s" % (pick["title"], pick["url"]))
 
 @willie.module.commands('til')
@@ -123,11 +113,6 @@ def youporn(bot, trigger):
   else:
      bot.say("No comment found, please retry")
    
-@willie.module.commands('insult')
-def insult(bot, trigger):
-  insult = requests.get('http://pleaseinsult.me/api?severity=random').json()['insult']
-  bot.say(insult)
-
 @willie.module.commands('jpg','jpeg')
 def jpg(bot, trigger):
    bot.say("Do I look like I know what a JPEG is? https://youtu.be/QEzhxP-pdos")
@@ -135,10 +120,6 @@ def jpg(bot, trigger):
 @willie.module.commands('fap','fapathon')
 def fap(bot, trigger):
    bot.say("https://i.imgur.com/9ciSNye.gifv")
-
-@willie.module.commands('twillie')
-def twitter(bot, trigger):
-   bot.say("Check my twitteraccount on https://twitter.com/williethebot")
 
 @willie.module.commands('rd')
 def reverseDict(bot, trigger):
