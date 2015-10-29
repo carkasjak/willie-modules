@@ -25,12 +25,9 @@ streamers = [
   "strenx_",
   "gamesdonequick",
   "mikletv",
-<<<<<<< HEAD
   "pangaeapanga",
   "beatfightercompetition",
-=======
   "PangaeaPanga",
->>>>>>> origin/master
   "freddurst"
 ]
 
