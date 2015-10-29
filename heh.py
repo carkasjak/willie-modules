@@ -100,19 +100,24 @@ def rather(bot, trigger):
 
 @willie.module.commands('youporn', 'yp')
 def youporn(bot, trigger):
-  header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
+  foundComment = False
   opener = urllib2.build_opener()
   opener.addheaders.append(('Cookie', 'age_verified=1'))
-  f = opener.open("http://www.youporn.com/random/video/")
-  htmlSource = f.read()
-  f.close()
-  comments = re.findall(b'<div class="commentContent">((?:.|\\n)*?)</p>', htmlSource)
-  if len(comments) >0 and len(comments) <=255:
-     randomcomment = random.choice(comments).replace(b"<p>",b"")
-     bot.say(randomcomment)
-  else:
-     bot.say("No comment found, please retry")
-   
+
+  for x in range(7):
+    f = opener.open("http://www.youporn.com/random/video/")
+    htmlSource = f.read()
+    f.close()
+    comments = re.findall(b'<div class="commentContent">((?:.|\\n)*?)</p>', htmlSource)
+    if len(comments) == 0:
+        continue
+    randomcomment = random.choice(comments).replace(b"<p>", b"")
+    bot.say(randomcomment, max_messages=2)
+    foundComment = True
+    break
+if not foundComment:
+    bot.say("No comment found, please retry")
+
 @willie.module.commands('jpg','jpeg')
 def jpg(bot, trigger):
    bot.say("Do I look like I know what a JPEG is? https://youtu.be/QEzhxP-pdos")
