@@ -115,7 +115,7 @@ def youporn(bot, trigger):
     bot.say(randomcomment, max_messages=2)
     foundComment = True
     break
-if not foundComment:
+  if not foundComment:
     bot.say("No comment found, please retry")
 
 @willie.module.commands('jpg','jpeg')
