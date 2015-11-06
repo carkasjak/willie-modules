@@ -28,7 +28,8 @@ streamers = [
   "pangaeapanga",
   "beatfightercompetition",
   "PangaeaPanga",
-  "freddurst"
+  "freddurst",
+  "blizzard"
 ]
 
 hstreamers = [
