@@ -47,7 +47,7 @@ def wafflebot(bot, trigger):
   db.expire(key, timeout)
 
 
-@willie.module.commands('talk', 'wb')
+@willie.module.commands('talk')
 def wafflebot_talk(bot, trigger):
   nick = trigger.group(2)
   if nick:
