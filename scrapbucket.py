@@ -19,8 +19,8 @@ class WaffleBotText(markovify.Text):
   def _prepare_text(self, text):
     text = text.strip()
 
-    #if not text.endswith((".", "?", "!")):
-    #  text += "."
+    if not text.endswith((".", "?", "!")):
+      text += "."
 
     return text
 
