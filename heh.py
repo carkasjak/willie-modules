@@ -56,47 +56,47 @@ def today(bot, trigger):
 
 @willie.module.commands('askreddit', 'asscredit')
 def ask(bot, trigger):
-  header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
+  header =  {"User-Agent": "Willie the bot"}
   bot.say(choice(requests.get("http://www.reddit.com/r/askreddit.json?limit=100", headers=header).json()["data"]["children"])["data"]["title"])
 
 @willie.module.commands('shower')
 def shower(bot, trigger):
-  header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
+  header =  {"User-Agent": "Willie the bot"}
   bot.say(choice(requests.get("http://www.reddit.com/r/showerthoughts.json?limit=100", headers=header).json()["data"]["children"])["data"]["title"])
 
 @willie.module.commands('5050')
 def fifty(bot, trigger):
-  header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
+  header =  {"User-Agent": "Willie the bot"}
   pick = choice(requests.get("http://www.reddit.com/r/fiftyfifty.json?limit=100", headers=header).json()["data"]["children"])["data"]
   bot.say("%s - %s" % (pick["title"], pick["url"]))
 
 @willie.module.commands('til')
 def til(bot, trigger):
-  header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
+  header =  {"User-Agent": "Willie the bot"}
   pick = choice(requests.get("http://www.reddit.com/r/todayilearned.json?limit=100", headers=header).json()["data"]["children"])["data"]
   bot.say("%s" % (pick["title"]))
 
 @willie.module.commands('beat')
 def beat(bot, trigger):
-  header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
+  header =  {"User-Agent": "Willie the bot"}
   pick = choice(requests.get("http://www.reddit.com/r/beatheads.json?limit=100", headers=header).json()["data"]["children"])["data"]
   bot.say("%s" % (pick["url"]))
 
 @willie.module.commands('newbeat','latest')
 def newbeat(bot, trigger):
-  header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
+  header =  {"User-Agent": "Willie the bot"}
   pick = choice(requests.get("http://www.reddit.com/r/beatheads/new.json?limit=1", headers=header).json()["data"]["children"])["data"]
   bot.say("%s" % (pick["url"]))
 
 @willie.module.commands('tifu')
 def tifu(bot, trigger):
-  header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
+  header =  {"User-Agent": "Willie the bot"}
   pick = choice(requests.get("http://www.reddit.com/r/tifu.json?limit=100", headers=header).json()["data"]["children"])["data"]
   bot.say("%s - %s" % (pick["title"], pick["url"]))
 
 @willie.module.commands('rather')
 def rather(bot, trigger):
-  header =  {"User-Agent": "Willie the bot/willie 5.3.0 by phixion"}
+  header =  {"User-Agent": "Willie the bot"}
   bot.say(choice(requests.get("http://www.reddit.com/r/wouldyourather.json?limit=100", headers=header).json()["data"]["children"])["data"]["title"])
 
 @willie.module.commands('youporn', 'yp')
