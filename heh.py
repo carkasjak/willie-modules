@@ -7,6 +7,7 @@ import datetime
 import requests
 import re
 import urllib.request as urllib2
+'''import urllib2'''
 import random
 
 @willie.module.commands('quakecon')
