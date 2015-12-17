@@ -81,6 +81,12 @@ def beat(bot, trigger):
   header =  {"User-Agent": "Willie the bot"}
   pick = choice(requests.get("http://www.reddit.com/r/beatheads.json?limit=100", headers=header).json()["data"]["children"])["data"]
   bot.say("%s" % (pick["url"]))
+  
+  @willie.module.commands('kadse')
+def kadse(bot, trigger):
+  header =  {"User-Agent": "Willie the bot"}
+  pick = choice(requests.get("http://www.reddit.com/r/catgifs.json?limit=100", headers=header).json()["data"]["children"])["data"]
+  bot.say("%s" % (pick["url"]))
 
 @willie.module.commands('newbeat','latest')
 def newbeat(bot, trigger):
