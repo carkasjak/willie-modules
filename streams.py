@@ -29,6 +29,7 @@ streamers = [
   "beatfightercompetition",
   "PangaeaPanga",
   "freddurst",
+  "carkasjak",
   "blizzard"
 ]
 
