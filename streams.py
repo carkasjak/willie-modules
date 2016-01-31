@@ -30,6 +30,7 @@ streamers = [
   "PangaeaPanga",
   "freddurst",
   "carkasjak",
+  "followgrubby",
   "blizzard"
 ]
 
