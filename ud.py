@@ -49,4 +49,4 @@ def urban(bot, trigger):
         except ValueError:
             pass
     definition = get_def(word, defnum).replace('\\r\\n', ' ').strip()
-    bot.say(definition, max_messages=5)
+    bot.say(definition, max_messages=3)
