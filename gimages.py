@@ -28,12 +28,12 @@ def google_search(query):
     except TypeError:
         return False
 
-@module.commands('gis', 'img')
-@module.example('.gis french bulldog')
+@module.commands('gi', 'img')
+@module.example('.gis persian cat')
 def gis(bot, trigger):
     query = trigger.group(2)
     if not query:
-        return bot.reply('.gis what?')
+        return bot.reply('.gi what?')
     uri = google_search(query)
     if uri:
         bot.reply(uri)
