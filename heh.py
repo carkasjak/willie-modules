@@ -143,3 +143,7 @@ def reverseDict(bot, trigger):
     if result:
       reply = "Possible words matching '%s': %s" % (word, ", ".join(w["word"] for w in result[0:5]))
       bot.say(reply)
+      
+@willie.module.commands("lenny")
+def lenny(bot, trigger):
+  bot.say(u"( ͡° ͜ʖ ͡°)")
