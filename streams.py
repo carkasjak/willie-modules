@@ -25,7 +25,6 @@ streamers = [
   "strenx_",
   "gamesdonequick",
   "mikletv",
-  "pangaeapanga",
   "beatfightercompetition",
   "PangaeaPanga",
   "freddurst",
