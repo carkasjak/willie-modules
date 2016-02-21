@@ -112,8 +112,8 @@ def monitor_streamers(bot):
     if currently_hstreaming[hstreamer][1]['cooldown'] > 130:
       del currently_hstreaming[hstreamer]
 
-@willie.module.commands('twitchtv','tv','twitch', 'teevee')
-@willie.module.example('.tv  or .tv twitchusername')
+@willie.module.commands('tv','twitch')
+@willie.module.example('.tv  or .tv username')
 def streamer_status(bot, trigger):
   streamer_name = trigger.group(2)
   query = streamers if streamer_name is None else streamer_name.split(" ")
@@ -138,7 +138,7 @@ def streamer_status(bot, trigger):
 
 
 @willie.module.commands('hb','hitbox')
-@willie.module.example('.hb  or .hb twitchusername')
+@willie.module.example('.hb  or .hb username')
 def hstreamer_status(bot, trigger):
   hstreamer_name = trigger.group(2)
   query = ",".join(hstreamers) if hstreamer_name is None else hstreamer_name
