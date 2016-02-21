@@ -134,7 +134,7 @@ def streamer_status(bot, trigger):
   if results:
     bot.say(", ".join(results))
   else:
-    bot.say("Nobody is currently streaming.")
+    bot.say("No one seems to be streaming.")
 
 
 @willie.module.commands('hb','hitbox')
@@ -159,5 +159,5 @@ def hstreamer_status(bot, trigger):
   if hresults:
     bot.say(", ".join(hresults))
   else:
-    bot.say("Nobody is currently streaming.")
+    bot.say("No one seems to be streaming.")
 
