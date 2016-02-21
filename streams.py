@@ -32,6 +32,7 @@ streamers = [
   "carkasjak",
   "followgrubby",
   "blizzard"
+  "scglive"
 ]
 
 hstreamers = [
