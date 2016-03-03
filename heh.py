@@ -39,6 +39,10 @@ def blizzcon(bot, trigger):
 @willie.module.commands('zen')
 def zen(bot, trigger):
    bot.say(requests.get("https://api.github.com/zen").text)
+   
+@willie.module.commands('whatgameisthayacurrentlyplaying')
+def whatgameisthayacurrentlyplaying(bot, trigger):
+   bot.say("Diablo III: Reaper of Souls")
 
 @willie.module.commands('nfact')
 def nfact(bot, trigger):
