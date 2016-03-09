@@ -16,7 +16,7 @@ def get_def(path, num=0):
         return definition
     nom = num + 1
     if path.startswith("define?term=") and resp['result_type'] == 'no_results':
-            definition = 'Definition %s not found!' % (word)
+        definition = 'Definition %s not found!' % (word)
     else:
         try:
             item = resp['list'][num]['definition'].encode('utf8')
