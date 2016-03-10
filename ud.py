@@ -31,7 +31,11 @@ def get_def(path, num=0):
             thumbsdown = resp['list'][num]['thumbs_down']
             points = str(int(thumbsup) - int(thumbsdown))
             total_nom = len(resp['list'])
-            definition = 'Definition: ' + str(item)[1:].replace("\n", "") + " | Number: " + str(nom) + '/' + str(total_nom) + ' | Points: ' + points + ' (03' + str(thumbsup) + '|05' + str(thumbsdown) + ')'
+            definition = ""
+            if path == "random":
+            	word = resp['list'][num]['word'].encode('utf8')
+            	definition = 'Word: ' + str(word) + ' | '
+            definition = definition + 'Definition: ' + str(item)[1:].replace("\n", "") + " | Number: " + str(nom) + '/' + str(total_nom) + ' | Points: ' + points + ' (03' + str(thumbsup) + '|05' + str(thumbsdown) + ')'
         except IndexError:
             definition = ('Definition entry %s does'
                           'not exist for \'%s\'.' % (nom, word))
