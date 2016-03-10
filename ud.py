@@ -1,21 +1,23 @@
 '''
 Module for doing queries on urbandictionary for Willie 5.x
 '''
+import json
+
 from willie import web
 from willie.module import commands
 
-UD_URL = 'http://api.urbandictionary.com/v0/'
+UD_URL = 'http://api.urbandictionary.com/v0/define?term='
 
 
-def get_def(path, num=0):
-    url = UD_URL + path
+def get_def(word, num=0):
+    url = UD_URL + word
     try:
         resp = json.loads(web.get(url))
     except UnicodeError:
         definition = ('ENGLISH MOTHERFUCKER, DO YOU SPEAK IT?')
         return definition
     nom = num + 1
-    if path.startswith("define?term=") and resp['result_type'] == 'no_results':
+    if resp['result_type'] == 'no_results':
         definition = 'Definition %s not found!' % (word)
     else:
         try:
@@ -34,21 +36,17 @@ def get_def(path, num=0):
 @commands('urban')
 def urban(bot, trigger):
     if not trigger.group(2):
-        path = "random"
-    else:
-        args = trigger.group(2).replace(', ', ',').split(',')
-        defnum = 0
-        word = ' '.join(args)
-        if len(args) > 1:
-            try:
-                defnum = int(args[0])
-                defnum = defnum - 1
-                word = ' '.join(args[1:])
-            except ValueError:
-                pass
-        path = "define?term=" + word
-    definition = get_def(path, defnum).replace('\\r\\n', ' ').strip()
+            bot.reply('.urban [defnum] <term>')
+            return
+    args = trigger.group(2).replace(', ', ',').split(',')
+    defnum = 0
+    word = ' '.join(args)
+    if len(args) > 1:
+        try:
+            defnum = int(args[0])
+            defnum = defnum - 1
+            word = ' '.join(args[1:])
+        except ValueError:
+            pass
+    definition = get_def(word, defnum).replace('\\r\\n', ' ').strip()
     bot.say(definition, max_messages=3)
-
-if __name__ == "__main__":
-    print(get_def("random"))
