@@ -1,6 +1,9 @@
 '''
 Module for doing queries on urbandictionary for Willie 5.x
 '''
+
+import json
+
 from willie import web
 from willie.module import commands
 
