@@ -26,7 +26,7 @@ def get_def(path, num=0):
         definition = 'Definition %s not found!' % (word)
     else:
         try:
-            item = resp['list'][num]['definition']).encode('utf8')
+            item = resp['list'][num]['definition'].encode('utf8')
             thumbsup = resp['list'][num]['thumbs_up']
             thumbsdown = resp['list'][num]['thumbs_down']
             points = str(int(thumbsup) - int(thumbsdown))
@@ -43,8 +43,9 @@ def get_def(path, num=0):
 
 
 def format_string(definition):
-    definition = definition.replace('\r\n', '')
+    definition = definition.replace('\\r\\n', '')
     definition = definition.replace('\n', '')
+    definition = definition.replace('\r', '')
     definition = definition.replace("\\'", "'")
     definition = definition.strip()
     return definition
