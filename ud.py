@@ -44,6 +44,8 @@ def get_def(path, num=0):
 
 def format_string(definition):
     definition = definition.replace('\\r\\n', '')
+    definition = definition.replace('\\n', '')
+    definition = definition.replace('\\r', '')
     definition = definition.replace('\n', '')
     definition = definition.replace('\r', '')
     definition = definition.replace("\\'", "'")
