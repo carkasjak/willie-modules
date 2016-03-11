@@ -33,7 +33,7 @@ def get_def(path, num=0):
             total_nom = len(resp['list'])
             definition = ""
             if path == "random":
-            	word = resp['list'][num]['word'].encode('utf8')
+                word = resp['list'][num]['word'].encode('utf8')
                 definition = 'Word: ' + str(word[1:]) + ' | '
             definition = definition + 'Definition: ' + str(item[1:]) + " | Number: " + str(nom) + '/' + str(total_nom) + ' | Points: ' + points + ' (03' + str(thumbsup) + '|05' + str(thumbsdown) + ')'
         except IndexError:
