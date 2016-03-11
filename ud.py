@@ -26,7 +26,7 @@ def get_def(path, num=0):
         definition = 'Definition %s not found!' % (word)
     else:
         try:
-            item = format_string(resp['list'][num]['definition']).encode('utf8')
+            item = resp['list'][num]['definition']).encode('utf8')
             thumbsup = resp['list'][num]['thumbs_up']
             thumbsdown = resp['list'][num]['thumbs_down']
             points = str(int(thumbsup) - int(thumbsdown))
@@ -34,16 +34,16 @@ def get_def(path, num=0):
             definition = ""
             if path == "random":
                 word = resp['list'][num]['word'].encode('utf8')
-                definition = 'Word: ' + str(word[1:]) + ' | '
-            definition = definition + 'Definition: ' + str(item[1:]) + " | Number: " + str(nom) + '/' + str(total_nom) + ' | Points: ' + points + ' (03' + str(thumbsup) + '|05' + str(thumbsdown) + ')'
+                definition = 'Word: ' + str(word)[1:] + ' | '
+            definition = definition + 'Definition: ' + str(item)[1:] + " | Number: " + str(nom) + '/' + str(total_nom) + ' | Points: ' + points + ' (03' + str(thumbsup) + '|05' + str(thumbsdown) + ')'
         except IndexError:
             definition = ('Definition entry %s does'
                           'not exist for \'%s\'.' % (nom, word))
-    return definition
+    return format_string(definition)
 
 
 def format_string(definition):
-    definition = definition.replace('\\r\\n', '')
+    definition = definition.replace('\r\n', '')
     definition = definition.replace('\n', '')
     definition = definition.replace("\\'", "'")
     definition = definition.strip()
