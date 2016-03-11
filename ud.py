@@ -26,7 +26,7 @@ def get_def(path, num=0):
         definition = 'Definition %s not found!' % (word)
     else:
         try:
-            item = resp['list'][num]['definition'].encode('utf8')
+            item = format_string(resp['list'][num]['definition']).encode('utf8')
             thumbsup = resp['list'][num]['thumbs_up']
             thumbsdown = resp['list'][num]['thumbs_down']
             points = str(int(thumbsup) - int(thumbsdown))
@@ -35,21 +35,28 @@ def get_def(path, num=0):
             if path == "random":
             	word = resp['list'][num]['word'].encode('utf8')
             	definition = 'Word: ' + str(word) + ' | '
-            definition = definition + 'Definition: ' + str(item)[1:].replace("\n", "") + " | Number: " + str(nom) + '/' + str(total_nom) + ' | Points: ' + points + ' (03' + str(thumbsup) + '|05' + str(thumbsdown) + ')'
+            definition = definition + 'Definition: ' + str(item)[1:] + " | Number: " + str(nom) + '/' + str(total_nom) + ' | Points: ' + points + ' (03' + str(thumbsup) + '|05' + str(thumbsdown) + ')'
         except IndexError:
             definition = ('Definition entry %s does'
                           'not exist for \'%s\'.' % (nom, word))
     return definition
-    
+
+
+def format_string(definition):
+    definition = definition.replace('\\r\\n', '')
+    definition = definition.replace('\n', '')
+    definition = definition.replace("\\'", "'")
+    definition = definition.strip()
+    return definition
+
 
 @commands('urban')
 def urban(bot, trigger):
+    defnum = 0
     if not trigger.group(2):
         path = "random"
-        defnum = 0
     else:
         args = trigger.group(2).replace(', ', ',').split(',')
-        defnum = 0
         word = ' '.join(args)
         if len(args) > 1:
             try:
@@ -59,8 +66,5 @@ def urban(bot, trigger):
             except ValueError:
                 pass
         path = "define?term=" + word
-    definition = get_def(path, defnum).replace('\\r\\n', ' ').strip()
+    definition = get_def(path, defnum)
     bot.say(definition, max_messages=3)
-
-if __name__ == "__main__":
-    print(get_def("random"))
