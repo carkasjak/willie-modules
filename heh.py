@@ -42,7 +42,7 @@ def zen(bot, trigger):
    
 @willie.module.commands('whatgameisthayacurrentlyplaying')
 def whatgameisthayacurrentlyplaying(bot, trigger):
-   bot.say("Diablo III: Reaper of Souls")
+   bot.say("not playing, just botting.")
 
 @willie.module.commands('nfact')
 def nfact(bot, trigger):
