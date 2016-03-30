@@ -1,13 +1,22 @@
 # coding=utf-8
-
+# Copyright 2008, Sean B. Palmer, inamidst.com
+# Copyright 2012, Elsie Powell, embolalia.com
+# Licensed under the Eiffel Forum License 2.
+# A modification of sopel's weather.py after it was broken by yahoo's requirement for oauth authentication 
+# This module requires api keys for forecast.io and google url shortener
+# This can be cleaned up a lot and made more efficient. 
 from __future__ import unicode_literals, absolute_import, print_function, division
-
+import requests
+import json
 from sopel import web
 from sopel.module import commands, example, NOLIMIT
 
-import xmltodict
-import collections
-
+def get_short_url(gurl):
+    short_url_service = 'https://www.googleapis.com/urlshortener/v1/url?key=API_KEY_GOES_HERE'
+    payload = {'longUrl': gurl}
+    headers = {'content-type': 'application/json'}
+    r = requests.post(short_url_service, data=json.dumps(payload), headers=headers)
+    return r.json()['id']
 
 def woeid_search(query):
     """
@@ -15,68 +24,63 @@ def woeid_search(query):
     node for the result, so that location data can still be retrieved. Returns
     None if there is no result, or the woeid field is empty.
     """
-    query = 'q=select woeid from geo.places where text="%s"' % query
-    body = web.get('http://query.yahooapis.com/v1/public/yql?' + query,
-                   dont_decode=True)
-    parsed = xmltodict.parse(body).get('query')
-    results = parsed.get('results')
-    if not results:
-        return None
-    elif type(results) is collections.OrderedDict:
-        place = results.get('place')
-    elif type(results) is list:
-        place = results[0].get('place')
+    query = 'q=select * from geo.places where text="%s"&format=json' % query
+    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
+    return body
+
+def reversewoeid_search(query):
+    """
+    Find the first Where On Earth ID for the given query. Result is the etree
+    node for the result, so that location data can still be retrieved. Returns
+    None if there is no result, or the woeid field is empty.
+    """
+    query = 'q=select * from geo.places where woeid="%s"&format=json' % query
+    body = requests.get('http://query.yahooapis.com/v1/public/yql?' + query)
+    return body
+
+def get_temp(forecast):
+    try:
+        temp = round(forecast.json()['currently']['temperature'])
+    except (KeyError, ValueError):
+        return 'unknown'
+    high = round(forecast.json()['daily']['data'][0]['temperatureMax'])
+    low = round(forecast.json()['daily']['data'][0]['temperatureMin'])
+    if forecast.json()['flags']['units'] == 'us':
+        return (u'%d\u00B0F (H:%d|L:%d)' % (temp, high, low))
     else:
-        return None
-    if not place:
-        return None
-    elif type(place) is collections.OrderedDict:
-        return place
-    elif type(place) is list:
-        return place[0]
-    else:
-        return None
-
-
-def get_cover(parsed):
+        return (u'%d\u00B0C (H:%d|L:%d)' % (temp, high, low))
+    
+def get_wind(forecast):
     try:
-        condition = parsed['channel']['item']['yweather:condition']
-    except KeyError:
-        return 'unknown'
-    text = condition['@text']
-    # code = int(condition['code'])
-    # TODO parse code to get those little icon thingies.
-    return text
-
-
-def get_temp(parsed):
-    try:
-        condition = parsed['channel']['item']['yweather:condition']
-        temp = int(condition['@temp'])
+        if forecast.json()['flags']['units'] == 'us':
+            wind_data = forecast.json()['currently']['windSpeed']
+            kph = float(wind_data / 0.62137)
+            #m_s = float(round(kph / 3.6, 1))
+            m_s = float(round(wind_data, 1))
+            speed = int(round(kph / 1.852, 0))
+            unit = 'mph'
+        elif forecast.json()['flags']['units'] == 'si':
+            wind_data = forecast.json()['currently']['windSpeed']
+            m_s = float(wind_data)
+            kph = float(m_s * 3.6)
+            speed = int(round(kph / 1.852, 0))
+            unit = 'm/s'
+        elif forecast.json()['flags']['units'] == 'ca':
+            wind_data = forecast.json()['currently']['windSpeed']
+            kph = float(wind_data)
+            m_s = float(round(kph / 3.6, 1))
+            speed = int(round(kph / 1.852, 0))
+            unit = 'm/s'
+        else:
+            wind_data = forecast.json()['currently']['windSpeed']
+            kph = float(wind_data / 0.62137)
+            #m_s = float(round(kph / 3.6, 1))
+            m_s = float(round(wind_data, 1))
+            speed = int(round(kph / 1.852, 0))
+            unit = 'mph'
+        degrees = int(forecast.json()['currently']['windBearing'])
     except (KeyError, ValueError):
         return 'unknown'
-    f = round((temp * 1.8) + 32, 2)
-    return (u'%d\u00B0C (%d\u00B0F)' % (temp, f))
-
-
-def get_humidity(parsed):
-    try:
-        humidity = parsed['channel']['yweather:atmosphere']['@humidity']
-    except (KeyError, ValueError):
-        return 'unknown'
-    return "Humidity: %s%%" % humidity
-
-
-def get_wind(parsed):
-    try:
-        wind_data = parsed['channel']['yweather:wind']
-        kph = float(wind_data['@speed'])
-        m_s = float(round(kph / 3.6, 1))
-        speed = int(round(kph / 1.852, 0))
-        degrees = int(wind_data['@direction'])
-    except (KeyError, ValueError):
-        return 'unknown'
-
     if speed < 1:
         description = 'Calm'
     elif speed < 4:
@@ -103,7 +107,6 @@ def get_wind(parsed):
         description = 'Violent storm'
     else:
         description = 'Hurricane'
-
     if (degrees <= 22.5) or (degrees > 337.5):
         degrees = u'\u2193'
     elif (degrees > 22.5) and (degrees <= 67.5):
@@ -120,19 +123,32 @@ def get_wind(parsed):
         degrees = u'\u2192'
     elif (degrees > 292.5) and (degrees <= 337.5):
         degrees = u'\u2198'
+    return description + ' ' + str(m_s) + unit + '(' + degrees + ')'
 
-    return description + ' ' + str(m_s) + 'm/s (' + degrees + ')'
-
+def get_alert(forecast):
+    try:
+        if forecast.json()['alerts'][0]:
+            title = forecast.json()['alerts'][0]['title']
+            alert = get_short_url(forecast.json()['alerts'][0]['uri'])
+            return 'Alert: ' + title + ' ' + alert
+        else:
+            return ''
+    except:
+        return ''        
 
 @commands('weather', 'wea')
 @example('.weather London')
 def weather(bot, trigger):
     """.weather location - Show the weather at the given location."""
-
     location = trigger.group(2)
     woeid = ''
+    body = ''
+    first_result = ''
+    alert = ''
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
+        body = reversewoeid_search(woeid)
+        longlat = body.json()['query']['results']['place']['centroid']['latitude']+","+body.json()['query']['results']['place']['centroid']['longitude']
         if not woeid:
             return bot.msg(trigger.sender, "I don't know where you live. " +
                            'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
@@ -141,24 +157,28 @@ def weather(bot, trigger):
         woeid = bot.db.get_nick_value(location, 'woeid')
         if woeid is None:
             first_result = woeid_search(location)
-            if first_result is not None:
-                woeid = first_result.get('woeid')
-
+            if type(first_result.json()['query']['results']['place']) is list:
+                woeid = 'filler'
+                longlat = first_result.json()['query']['results']['place'][0]['centroid']['latitude']+","+first_result.json()['query']['results']['place'][0]['centroid']['longitude']
+            else:
+                woeid = 'filler'
+                longlat = first_result.json()['query']['results']['place']['centroid']['latitude']+","+first_result.json()['query']['results']['place']['centroid']['longitude']
     if not woeid:
         return bot.reply("I don't know where that is.")
-
-    query = web.urlencode({'w': woeid, 'u': 'c'})
-    raw = web.get('http://weather.yahooapis.com/forecastrss?' + query,
-                  dont_decode=True)
-    parsed = xmltodict.parse(raw).get('rss')
-    location = parsed.get('channel').get('title')
-
-    cover = get_cover(parsed)
-    temp = get_temp(parsed)
-    humidity = get_humidity(parsed)
-    wind = get_wind(parsed)
-    bot.say(u'%s: %s, %s, %s, %s' % (location, cover, temp, humidity, wind))
-
+    forecast = requests.get('https://api.forecast.io/forecast/API_KEY_GOES_HERE/%s?units=auto' % longlat)
+    if body:
+        location = body.json()['query']['results']['place']['name']
+    else:
+        if type(first_result.json()['query']['results']['place']) is list:
+            location = first_result.json()['query']['results']['place'][0]['name']
+        else:
+            location = first_result.json()['query']['results']['place']['name'] 
+    summary = forecast.json()['currently']['summary']
+    temp = get_temp(forecast)
+    humidity = forecast.json()['currently']['humidity']
+    wind = get_wind(forecast)
+    alert = get_alert(forecast)
+    bot.say(u'%s: %s, %s, Humidity: %s%%, %s %s' % (location, summary, temp, round(humidity*100), wind, alert ))
 
 @commands('setlocation', 'setwoeid')
 @example('.setlocation Columbus, OH')
@@ -167,21 +187,30 @@ def update_woeid(bot, trigger):
     if not trigger.group(2):
         bot.reply('Give me a location, like "Washington, DC" or "London".')
         return NOLIMIT
-
+	
     first_result = woeid_search(trigger.group(2))
     if first_result is None:
         return bot.reply("I don't know where that is.")
-
-    woeid = first_result.get('woeid')
-
+    if type(first_result.json()['query']['results']['place']) is list:
+        found = first_result.json()['query']['results']['place'][0]
+    else:
+        found = first_result.json()['query']['results']['place']
+    woeid = found['woeid']
     bot.db.set_nick_value(trigger.nick, 'woeid', woeid)
-
-    neighborhood = first_result.get('neighborhood') or ''
+    neighborhood = found['locality2'] or ''
     if neighborhood:
-        neighborhood += ','
-    city = first_result.get('city') or ''
-    state = first_result.get('state') or ''
-    country = first_result.get('country') or ''
-    uzip = first_result.get('uzip') or ''
-    bot.reply('I now have you at WOEID %s (%s %s, %s, %s %s.)' %
+        neighborhood = neighborhood['#text'] + ', '
+    city = found['locality1'] or ''
+    # This is to catch cases like 'Bawlf, Alberta' where the location is
+    # thought to be a "LocalAdmin" rather than a "Town"
+    if city:
+        city = city['content']
+    else:
+        city = found['name']
+    state = found['admin1']['content'] or ''
+    country = found['country']['content'] or ''
+    uzip = found['postal'] or ''
+    if uzip:
+        uzip = uzip['content']
+    bot.reply('I now have you at WOEID %s (%s%s, %s, %s %s)' %
               (woeid, neighborhood, city, state, country, uzip))
