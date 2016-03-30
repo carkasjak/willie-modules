@@ -151,3 +151,7 @@ def reverseDict(bot, trigger):
 @willie.module.commands("lenny")
 def lenny(bot, trigger):
   bot.say(u"( ͡° ͜ʖ ͡°)")
+  
+@willie.module.commands("wowalert")
+def wowalert(bot, trigger):
+  bot.say("http://launcher.worldofwarcraft.com/alert (US); http://status.wow-europe.com/en/alert (EU)")
