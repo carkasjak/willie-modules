@@ -1,5 +1,5 @@
 # sopel-modules
-## Modules for Willie IRC Bot
+## Modules for Sopel IRC Bot
 
 Requirements:
 
