@@ -16,3 +16,5 @@ Contents:
 * update.py - adds .update admin command to update modules via git
 * new_weather.py - fixes broken .weather command
 * talk.py - adds .talk command 
+
+most of my modules are based on / developed by https://github.com/dasu/
