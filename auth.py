@@ -2,7 +2,7 @@
 auth.py - Willie Quakenet Auth Module
 """
 
-from willie.module import commands, example
+from sopel.module import commands, example
 
 @commands('auth')
 @example('.auth [password]')

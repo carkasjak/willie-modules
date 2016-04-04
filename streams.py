@@ -2,7 +2,7 @@
 module for querying twitch.tv and hitbox.tv API
 '''
 import requests
-import willie
+import sopel
 
 announce_chan = "#pony.ql"
 streamers = [
@@ -45,7 +45,7 @@ hstreamers = [
 currently_streaming = {}
 currently_hstreaming = {}
 
-@willie.module.interval(10)
+@sopel.module.interval(10)
 def monitor_streamers(bot):
   streaming_names = []
   streaming = requests.get('https://api.twitch.tv/kraken/streams', params={"channel": ",".join(streamers)}).json()
@@ -113,8 +113,8 @@ def monitor_streamers(bot):
     if currently_hstreaming[hstreamer][1]['cooldown'] > 130:
       del currently_hstreaming[hstreamer]
 
-@willie.module.commands('tv','twitch')
-@willie.module.example('.tv  or .tv username')
+@sopel.module.commands('tv','twitch')
+@sopel.module.example('.tv  or .tv username')
 def streamer_status(bot, trigger):
   streamer_name = trigger.group(2)
   query = streamers if streamer_name is None else streamer_name.split(" ")
@@ -138,8 +138,8 @@ def streamer_status(bot, trigger):
     bot.say("No one seems to be streaming.")
 
 
-@willie.module.commands('hb','hitbox')
-@willie.module.example('.hb  or .hb username')
+@sopel.module.commands('hb','hitbox')
+@sopel.module.example('.hb  or .hb username')
 def hstreamer_status(bot, trigger):
   hstreamer_name = trigger.group(2)
   query = ",".join(hstreamers) if hstreamer_name is None else hstreamer_name

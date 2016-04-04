@@ -1,188 +1,141 @@
 # coding=utf8
-'''
-1. Go to https://console.developers.google.com/project
-2. Create a new API project
-3. On the left sidebar, click "Credentials" under "APIs & auth"
-4. Click "Create new Key" under "Public API access"
-5. Click "Server key"
-6. Under "APIs & auth" click "YouTube Data API" and then click "Enable API"
+"""Youtube module for Sopel"""
+from __future__ import unicode_literals, division
 
-Once the key has been generated, add the following to your willie config
-
-[youtube]
-api_key = dummy_key
-'''
-
+from sopel.module import rule, commands, example
+from sopel.config.types import StaticSection, ValidatedAttribute, NO_DEFAULT
+from sopel.formatting import color, colors
+from sopel import tools
 import datetime
-import json
-import re
 import sys
-from willie import web, tools
-from willie.module import rule, commands, example
+import re
+import apiclient.discovery
+if sys.version_info.major < 3:
+    int = long
 
-URL_REGEX = re.compile(r'(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
-INFO_URL = ('https://www.googleapis.com/youtube/v3/videos'
-            '?key={}&part=contentDetails,status,snippet,statistics&id={}')
-SEARCH_URL = ('https://www.googleapis.com/youtube/v3/search'
-              '?key={}&part=id&maxResults=1&q={}&type=video')
+ISO8601_PERIOD_REGEX = re.compile(
+    r"^(?P<sign>[+-])?"
+    r"P(?!\b)"
+    r"(?P<y>[0-9]+([,.][0-9]+)?(?:Y))?"
+    r"(?P<mo>[0-9]+([,.][0-9]+)?M)?"
+    r"(?P<w>[0-9]+([,.][0-9]+)?W)?"
+    r"(?P<d>[0-9]+([,.][0-9]+)?D)?"
+    r"((?:T)(?P<h>[0-9]+([,.][0-9]+)?H)?"
+    r"(?P<m>[0-9]+([,.][0-9]+)?M)?"
+    r"(?P<s>[0-9]+([,.][0-9]+)?S)?)?$")
+regex = re.compile('(youtube.com/watch\S*v=|youtu.be/)([\w-]+)')
+API = None
 
-class YouTubeError(Exception):
-    pass
 
-def setup(bot):
-    if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = tools.WillieMemory()
-    bot.memory['url_callbacks'][URL_REGEX] = youtube_info
+class YoutubeSection(StaticSection):
+    api_key = ValidatedAttribute('api_key', default=NO_DEFAULT)
+    """The Google API key to auth to the endpoint"""
 
-def shutdown(bot):
-    del bot.memory['url_callbacks'][URL_REGEX]
-
-def get_api_key(bot):
-    if not bot.config.has_option('youtube', 'api_key'):
-        raise KeyError('Missing YouTube API key')
-    return bot.config.youtube.api_key
 
 def configure(config):
-    if config.option('Configure YouTube v3 API', False):
-        config.interactive_add('youtube', 'api_key', 'Google Developers '
-                'Console API key (Server key)')
+    config.define_section('youtube', YoutubeSection, validate=False)
+    config.youtube.configure_setting(
+        'api_key',
+        'Enter your Google API key.',
+    )
 
-def convert_date(date):
-    """Parses an ISO 8601 datestamp and reformats it to be a bit nicer"""
-    date = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S.000Z')
-    return date.strftime('%Y-%m-%d %H:%M:%S UTC')
 
-def convert_duration(duration):
-    """Converts an ISO 8601 duration to a human-readable duration"""
-    units = {
-        'hour': 0,
-        'minute': 0,
-        'second': 0
-    }
-    for symbol, unit in zip(('H', 'M', 'S'), ('hour', 'minute', 'second')):
-        match = re.search(r'(\d+)' + symbol, duration)
-        if match:
-            units[unit] = int(match.group(1))
+def setup(bot):
+    bot.config.define_section('youtube', YoutubeSection)
+    if not bot.memory.contains('url_callbacks'):
+        bot.memory['url_callbacks'] = tools.SopelMemory()
+    bot.memory['url_callbacks'][regex] = get_info
+    global API
+    API = apiclient.discovery.build("youtube", "v3",
+                                    developerKey=bot.config.youtube.api_key)
 
-    time = datetime.time(**units)
-    output = str(time)
-    match = re.search('(\d+)D', duration)
-    if match:
-        output = match.group(1) + ' days, ' + output
-    return output
 
-def fetch_video_info(bot, id):
-    """Retrieves video metadata from YouTube"""
-    url = INFO_URL.format(get_api_key(bot), id)
-    raw, headers = web.get(url, return_headers=True)
+def shutdown(bot):
+    del bot.memory['url_callbacks'][regex]
 
-    if headers['_http_status'] == 403:
-        bot.say(u'[YouTube Search] Access denied.  Check that your API key is '
-                u'configured to allow access to your IP address.')
-        return
-
-    try:
-        result = json.loads(raw)
-    except ValueError as e:
-        raise YouTubeError(u'Failed to decode: ' + raw)
-
-    if 'error' in result:
-        raise YouTubeError(result['error']['message'])
-
-    if len(result['items']) == 0:
-        raise YouTubeError('YouTube API returned empty result')
-
-    video = result['items'][0]
-    info = {
-        'title': video['snippet']['title'],
-        'uploader': video['snippet']['channelTitle'],
-        'uploaded': convert_date(video['snippet']['publishedAt']),
-        'duration': convert_duration(video['contentDetails']['duration']),
-        'views': video['statistics']['viewCount'],
-        'comments': video['statistics']['commentCount'],
-        'likes': video['statistics']['likeCount'],
-        'dislikes': video['statistics']['dislikeCount'],
-        'link': 'https://youtu.be/' + video['id']
-    }
-
-    return info
-
-def fix_count(count):
-    """Adds commas to a number representing a count"""
-    return '{:,}'.format(int(count))
-
-def format_info(tag, info, include_link=False):
-    """Formats video information for sending to IRC.
-
-    If include_link is True, then the video link will be included in the
-    output (this is useful for search results), otherwise it is not (no
-    reason to include a link if we are simply printing information about
-    a video that was already linked in chat).
-    """
-    output = [
-        u'[{}] Title: {}'.format(tag, info['title']),
-        u'Uploader: ' + info['uploader'],
-        #u'Uploaded: ' + info['uploaded'],
-        u'Duration: ' + info['duration'],
-        u'Views: ' + fix_count(info['views'])
-        #u'Comments: ' + fix_count(info['comments']),
-        #u'Likes: ' + fix_count(info['likes']),
-        #u'Dislikes: ' + fix_count(info['dislikes'])
-    ]
-
-    if include_link:
-        output.append(u'Link: ' + info['link'])
-
-    return u' | '.join(output)
-
-@rule('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*')
-def youtube_info(bot, trigger, found_match=None):
-    """Catches youtube links said in chat and fetches video information"""
-    match = found_match or trigger
-    try:
-        info = fetch_video_info(bot, match.group(2))
-    except YouTubeError as e:
-        bot.say(u'[YouTube] Lookup failed: {}'.format(e))
-        return
-    bot.say(format_info('YouTube', info))
 
 @commands('yt', 'youtube')
-@example('.yt Suff Daddy - Pattern Select')
-def ytsearch(bot, trigger):
-    """Allows users to search for YouTube videos with .yt <search query>"""
+@example('.yt h3h3productions rekt together')
+def search(bot, trigger):
+    """Search YouTube"""
     if not trigger.group(2):
         return
-
-    # Note that web.get() quotes the query parameters, so the
-    # trigger is purposely left unquoted (double-quoting breaks things)
-    url = SEARCH_URL.format(get_api_key(bot), trigger.group(2))
-    raw, headers = web.get(url, return_headers=True)
-    if headers['_http_status'] == 403:
-        bot.say(u'[YouTube Search] Access denied.  Check that your API key is '
-                u'configured to allow access to your IP address.')
+    results = API.search().list(
+        q=trigger.group(2),
+        type='video',
+        part='id,snippet',
+        maxResults=1,
+    ).execute()
+    results = results.get('items')
+    if not results:
+        bot.say("I couldn't find any YouTube videos for your query.")
         return
 
-    try:
-        result = json.loads(raw)
-    except ValueError as e:
-        bot.say(u'[YouTube Search] Failed to decode: ' + raw)
-        return
+    _say_result(bot, trigger, results[0]['id']['videoId'])
 
-    if 'error' in result:
-        bot.say(u'[YouTube Search] ' + result['error']['message'])
-        return
 
-    if len(result['items']) == 0:
-        bot.say(u'[YouTube Search] No results for ' + trigger.group(2))
-        return
+@rule('.*(youtube.com/watch\S*v=|youtu.be/)([\w-]+).*')
+def get_info(bot, trigger, found_match=None):
+    """
+    Get information about the latest video uploaded by the channel provided.
+    """
+    match = found_match or trigger
+    _say_result(bot, trigger, match.group(2), include_link=False)
 
-    # YouTube v3 API does not include useful video metadata in search results.
-    # Searching gives us the video ID, now we have to do a regular lookup to
-    # get the information we want.
-    try:
-        info = fetch_video_info(bot, result['items'][0]['id']['videoId'])
-    except YouTubeError as e:
-        bot.say(u'[YouTube] Lookup failed: {}'.format(e))
-        return
 
-    bot.say(format_info('YouTube Search', info, include_link=True))
+def _say_result(bot, trigger, id_, include_link=True):
+    result = API.videos().list(
+        id=id_,
+        part='snippet,contentDetails,statistics',
+    ).execute().get('items')
+    if not result:
+        return
+    result = result[0]
+
+    message = (
+        '[YouTube'] '
+        '{title} | Uploader: {uploader} | '
+        'Length: {length} | Views: {views:,} |'
+    )
+
+    snippet = result['snippet']
+    details = result['contentDetails']
+    statistics = result['statistics']
+    duration = _parse_duration(details['duration'])
+    uploaded = _parse_published_at(bot, trigger, snippet['publishedAt'])
+    comments = statistics.get('commentCount', '-')
+    if comments != '-':
+        comments = '{:,}'.format(int(comments))
+
+    message = message.format(
+        title=snippet['title'],
+        uploader=snippet['channelTitle'],
+        length=duration,
+        uploaded=uploaded,
+        views=int(statistics['viewCount']),
+        comments=comments,
+    )
+    if 'likeCount' in statistics:
+        likes = int(statistics['likeCount'])
+        message += ' | ' + color('{:,}+'.format(likes), colors.GREEN)
+    if 'dislikeCount' in statistics:
+        dislikes = int(statistics['dislikeCount'])
+        message += ' | ' + color('{:,}-'.format(dislikes), colors.RED)
+    if include_link:
+        message = message + ' | Link: https://youtu.be/' + id_
+    bot.say(message)
+
+
+def _parse_duration(duration):
+    splitdur = ISO8601_PERIOD_REGEX.match(duration)
+    dur = []
+    for k, v in splitdur.groupdict().items():
+        if v is not None:
+            dur.append(v.lower())
+    return ' '.join(dur)
+
+
+def _parse_published_at(bot, trigger, published):
+    pubdate = datetime.datetime.strptime(published, '%Y-%m-%dT%H:%M:%S.%fZ')
+    return tools.time.format_time(bot.db, bot.config, nick=trigger.nick, 
+        channel=trigger.sender, time=pubdate)

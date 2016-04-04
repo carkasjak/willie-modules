@@ -1,11 +1,11 @@
 '''
-Module for doing queries on urbandictionary for Willie 5.x
+Module for doing queries on urbandictionary
 '''
 
 import json
 
-from willie import web
-from willie.module import commands
+from sopel import web
+from sopel.module import commands
 
 UD_URL = 'http://api.urbandictionary.com/v0/'
 

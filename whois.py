@@ -1,4 +1,4 @@
-from willie.module import commands, event, rule
+from sopel.module import commands, event, rule
 from time import sleep
 from datetime import datetime, timedelta
 

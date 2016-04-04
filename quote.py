@@ -1,4 +1,4 @@
-from willie import *
+from sopel import *
 import random
 
 qdb = "/home/bot/.willie/quote.db"

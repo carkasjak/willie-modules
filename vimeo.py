@@ -1,13 +1,13 @@
 # coding: utf8
 """
-vimeo.py - Willie Vimeo Module
+vimeo.py - sopel Vimeo Module
 """
 from __future__ import unicode_literals
 import json
 import re
 
-from willie import web
-from willie.module import commands, example, rule
+from sopel import web
+from sopel.module import commands, example, rule
 
 
 regex = re.compile('.*(vimeo.com/)([0-9]+)')
@@ -15,7 +15,7 @@ regex = re.compile('.*(vimeo.com/)([0-9]+)')
 
 def setup(bot):
     if not bot.memory.contains('url_callbacks'):
-        bot.memory['url_callbacks'] = tools.WillieMemory()
+        bot.memory['url_callbacks'] = tools.sopelMemory()
     bot.memory['url_callbacks'][regex] = vimeo_by_url
 
 
