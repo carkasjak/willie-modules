@@ -93,7 +93,7 @@ def _say_result(bot, trigger, id_, include_link=True):
     result = result[0]
 
     message = (
-        '[YouTube'] '
+        '[YouTube] '
         '{title} | Uploader: {uploader} | '
         'Length: {length} | Views: {views:,} |'
     )
