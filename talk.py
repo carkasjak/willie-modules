@@ -64,7 +64,7 @@ def talkbot_talk(bot, trigger):
   if len(results) < min_lines:
     bot.say("Sorry %s, there is not enough data." % trigger.nick)
   else:
-    model = WaffleBotText("\n".join([r.decode('utf8') for r in results]))
+    model = TalkBotText("\n".join([r.decode('utf8') for r in results]))
     resp = model.make_short_sentence(500,
       max_overlap_total=MAX_OVERLAP_TOTAL, 
       max_overlap_ratio=MAX_OVERLAP_RATIO)
