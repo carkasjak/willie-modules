@@ -5,6 +5,7 @@
 # A modification of sopel's weather.py after it was broken by yahoo's requirement for oauth authentication 
 # This module requires api keys for forecast.io and google url shortener
 # This can be cleaned up a lot and made more efficient.
+# thanks to https://github.com/dasu/ 
 from __future__ import unicode_literals, absolute_import, print_function, division
 import requests
 import json
