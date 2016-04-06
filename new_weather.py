@@ -5,7 +5,6 @@
 # A modification of sopel's weather.py after it was broken by yahoo's requirement for oauth authentication 
 # This module requires api keys for forecast.io and google url shortener
 # This can be cleaned up a lot and made more efficient.
-# thanks to https://github.com/dasu/ 
 from __future__ import unicode_literals, absolute_import, print_function, division
 import requests
 import json
@@ -148,14 +147,15 @@ def weather(bot, trigger):
     woeid,body,first_result,alert,result = '','','','',''
     if not location:
         woeid = bot.db.get_nick_value(trigger.nick, 'woeid')
-        body = reversewoeid_search(woeid)
-        result = body.json()['query']['results']['place']
-        longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
         if not woeid:
             return bot.msg(trigger.sender, "I don't know where you live. " +
                            'Give me a location, like .weather London, or tell me where you live by saying .setlocation London, for example.')
+        body = reversewoeid_search(woeid)
+        result = body.json()['query']['results']['place']
+        longlat = result['centroid']['latitude']+","+result['centroid']['longitude']
     else:
         location = location.strip()
+        longlat = None
         woeid = bot.db.get_nick_value(location, 'woeid')
         if woeid is None:
             first_result = woeid_search(location)
