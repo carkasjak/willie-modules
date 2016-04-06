@@ -95,7 +95,7 @@ def _say_result(bot, trigger, id_, include_link=True):
     message = (
         '[YouTube] '
         '{title} | Uploader: {uploader} | '
-        'Length: {length} | Views: {views:,} |'
+        'Length: {length} | Views: {views:,}'
     )
 
     snippet = result['snippet']
