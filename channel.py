@@ -42,7 +42,7 @@ def zen(bot, trigger):
    
 @sopel.module.commands('whatgameisthayacurrentlyplaying')
 def whatgameisthayacurrentlyplaying(bot, trigger):
-   bot.say("not playing, just botting.")
+   bot.say("banned.")
 
 @sopel.module.commands('nfact')
 def nfact(bot, trigger):
