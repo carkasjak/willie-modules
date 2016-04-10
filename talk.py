@@ -72,7 +72,7 @@ def wafflebot(bot, trigger):
         max_overlap_ratio=MAX_OVERLAP_RATIO)
     bot.say(fullresp)
 
-@sopel.module.commands('talk', 'wb')
+@sopel.module.commands('talk')
 def wafflebot_talk(bot, trigger):
   nick = trigger.group(2)
   if nick:
@@ -105,7 +105,7 @@ def wafflebot_talk(bot, trigger):
         max_overlap_ratio=MAX_OVERLAP_RATIO)
       bot.say(fullresp)
 
-@sopel.module.commands('wbknows')
+@sopel.module.commands('iknow')
 def wafflebotknows(bot,trigger):
   #knows = db.dbsize()
   knows = len(fullresults)
