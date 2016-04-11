@@ -7,22 +7,20 @@ import sopel
 timeout = 60 * 60 * 24 * 30 # 60s * 60m * 24h * 30d = 1 month
 ignore = ["http"]
 
-MAX_OVERLAP_RATIO = 0.7
-MAX_OVERLAP_TOTAL = 15
-global llines
-llines = 0
-
+MAX_OVERLAP_RATIO = 0.5
+MAX_OVERLAP_TOTAL = 10
 
 db = redis.Redis(db=0)
-class WaffleBotText(markovify.Text):
+
+class TalkBotText(markovify.Text):
   def test_sentence_input(self, sentence):
     return True
 
   def _prepare_text(self, text):
     text = text.strip()
 
-    #if not text.endswith((".", "?", "!")):
-    #  text += "."
+    if not text.endswith((".", "?", "!")):
+      text += "."
 
     return text
 
@@ -32,25 +30,9 @@ class WaffleBotText(markovify.Text):
 
     return markovify.split_into_sentences(text)
 
-def setup(bot):
-  global fullresults
-  global fullmodel
-  #global llines
-  #llines = 0
-  fullresults = []
-  for k in db.keys('*'):
-    fullresults.extend(db.smembers(k))
-  fullmodel = WaffleBotText("\n".join([r.decode('utf8') for r in fullresults]), state_size=3)
-
-@sopel.module.interval(86400)
-def refresh_results(bot):
-  fullresults = []
-  for k in db.keys('*'):
-    fullresults.extend(db.smembers(k))
-  fullmodel = WaffleBotText("\n".join([r.decode('utf8') for r in fullresults]), state_size=3)
 
 @sopel.module.rule(r'.*$')
-def wafflebot(bot, trigger):
+def talkbot(bot, trigger):
   for ignored_item in ignore:
     if ignored_item.lower() in trigger.lower():
       continue
@@ -62,52 +44,28 @@ def wafflebot(bot, trigger):
   today = datetime.datetime.now()
   key = "%s%s:%s" % (today.month, today.day, trigger.nick.lower())
   db.sadd(key, str(trigger))
-  #db.expire(key, timeout)
-  global llines
-  llines+=1
-  if llines > 1000:
-    llines = 0
-    fullresp = fullmodel.make_short_sentence(140,
-        max_overlap_total=MAX_OVERLAP_TOTAL,
-        max_overlap_ratio=MAX_OVERLAP_RATIO)
-    bot.say(fullresp)
+  db.expire(key, timeout)
+
 
 @sopel.module.commands('talk')
-def wafflebot_talk(bot, trigger):
+def talkbot_talk(bot, trigger):
   nick = trigger.group(2)
   if nick:
     pattern = "*:%s" % nick.lower()
     min_lines = 200
-    results = []
-    for k in db.keys(pattern):
-      results.extend(db.smembers(k))
   else:
-    #pattern = "*"
+    pattern = "*"
     min_lines = 100
-    results = fullresults
 
-  #results = []
-  #for k in db.keys(pattern):
-  #  results.extend(db.smembers(k))
+  results = []
+  for k in db.keys(pattern):
+    results.extend(db.smembers(k))
 
   if len(results) < min_lines:
     bot.say("Sorry %s, there is not enough data." % trigger.nick)
   else:
-    if nick:
-      model = WaffleBotText("\n".join([r.decode('utf8') for r in results]), state_size=3)
-      resp = model.make_short_sentence(140,
-        max_overlap_total=MAX_OVERLAP_TOTAL,
-        max_overlap_ratio=MAX_OVERLAP_RATIO)
-      bot.say(resp)
-    else:
-      fullresp = fullmodel.make_short_sentence(140,
-        max_overlap_total=MAX_OVERLAP_TOTAL,
-        max_overlap_ratio=MAX_OVERLAP_RATIO)
-      bot.say(fullresp)
-
-@sopel.module.commands('iknow')
-def wafflebotknows(bot,trigger):
-  #knows = db.dbsize()
-  knows = len(fullresults)
-  bot.say("I know about %s things" % (knows))
-
+    model = TalkBotText("\n".join([r.decode('utf8') for r in results]))
+    resp = model.make_short_sentence(500,
+      max_overlap_total=MAX_OVERLAP_TOTAL, 
+      max_overlap_ratio=MAX_OVERLAP_RATIO)
+    bot.say(resp)
