@@ -153,15 +153,15 @@ def lenny(bot, trigger):
   bot.say(u"( ͡° ͜ʖ ͡°)")
 
 @willie.module.commands("shrug1")
-def lenny(bot, trigger):
+def shrug1(bot, trigger):
   bot.say(u"¯\_(ツ)_/¯")
   
 @willie.module.commands("shrug2")
-def lenny(bot, trigger):
+def shrug2(bot, trigger):
   bot.say(u"¯\(º_o)/¯")
 
 @willie.module.commands("shrug3")
-def lenny(bot, trigger):
+def shrug3(bot, trigger):
   bot.say(u"┐(ツ)┌")
   
 @willie.module.commands("wowalert")
